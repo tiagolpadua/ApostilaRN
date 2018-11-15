@@ -1022,7 +1022,7 @@ export function loadPoneys() {
       data: res.body
     }))
     .catch(error => {
-      console.log(error);
+      alert(error.message);
     });
 }
 
@@ -1174,7 +1174,7 @@ export function loadPoneys() {
         });
       })
       .catch(error => {
-        console.log(error);
+        alert(error.message);
       });
   };
 }
