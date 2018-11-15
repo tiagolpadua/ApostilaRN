@@ -833,3 +833,53 @@ export default connect(
   mapDispatchToProps
 )(HeaderButtonsComponent);
 ```
+
+## Botão pra Incluir Novo Poney
+
+Agora que já temos o Redux controlando o estado da autenticação, nosso próximo passo é exibir um botão de inclusão de ponei caso o usuário esteja logado:
+
+```jsx
+// src/components/HeaderButtonsComponent.js
+// Código anterior omitido
+  render() {
+    return (
+      <View style={styles.headerButtonContainer}>
+        {this.props.profile.user ? (
+          <View style={styles.headerButtonContainer}>
+            {/* Novidade aqui */}
+            <Button transparent>
+              <Icon
+                style={[styles.headerIconFont, styles.headerIconMargin]}
+                name="add"
+                onPress={() =>
+                  Alert.alert("Incluir", "Aqui irá a tela de incluir ponei", [
+                    { text: "OK" }
+                  ])
+                }
+              />
+            </Button>
+            <Button transparent onPress={this.handleLogout}>
+              <Image
+                style={styles.headerIconMargin}
+                source={require("../assets/admin.png")}
+              />
+            </Button>
+          </View>
+        ) : (
+          <Button transparent onPress={this.openLoginModal}>
+            <Icon
+              style={[styles.headerIconFont, styles.headerIconMargin]}
+              name="contact"
+            />
+          </Button>
+        )}
+        {this.renderLoginModal()}
+      </View>
+    );
+  }
+// Código posterior omitido
+```
+
+## Botão pra Editar e Excluir Ponei
+
+Temos mais dois botões a serem colocados na tela, mas estes vão ficar ao lado de cada ponei na listagem, são os botões de editar e excluir:
