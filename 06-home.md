@@ -978,3 +978,529 @@ Mas apesar de nossa lógica estar aparentemente correta, os botões não são ex
               </Left>
 // Código posterior omitido
 ```
+
+## Mapeamento do Serviço Rest para Listagem dos Poneys
+
+O serviço REST que servirá de backend para nossa aplicação já se encontra pronto, sua URL base é https://coponeyapi.herokuapp.com. Os seguintes end-points estão disponíveis:
+
+- GET/POST: https://coponeyapi.herokuapp.com/v1/poneys
+- GET/PUT/DELETE: https://coponeyapi.herokuapp.com/v1/poneys/{id}
+
+Caso queira dar uma olhada no código fonte deste serviço, ele pode ser acessado em https://github.com/tiagolpadua/CoponeyAPI.
+
+O código de acionamento de nossa API ficará isolado em uma pasta 'api' dentro de 'src', mas para realizar os requests usaremos a biblioteca 'superagent', vamos instalá-la em nosso projeto:
+
+```bash
+> npm install --save superagent
+```
+
+Agora criaremos o arquivo que faz as chamadas para as APIs:
+
+```jsx
+// src/api/index.js
+import request from "superagent";
+
+// const URI = "http://localhost:3000/v1/poneys";
+const URI = "https://coponeyapi.herokuapp.com/v1/poneys";
+
+export function loadPoneysAPI() {
+  return request.get(URI).set("Accept", "application/json");
+}
+```
+
+O próximo passo é chamar esta API a partir do arquivo que define as ações:
+
+```jsx
+// src/actions.js
+import { loadPoneysAPI } from "./api";
+import { LOAD_PONEYS, LOGIN, LOGOUT } from "./constants";
+
+export function loadPoneys() {
+  loadPoneysAPI()
+    .then(res => ({
+      type: LOAD_PONEYS,
+      data: res.body
+    }))
+    .catch(error => {
+      console.log(error);
+    });
+}
+
+// Código posterior omitido
+```
+
+Devemos também ajustar o arquivo de constantes para incluir a nova constante 'LOAD_PONEYS':
+
+```jsx
+// src/constants.js
+const LOGIN = "LOGIN";
+const LOGOUT = "LOGOUT";
+const LOAD_PONEYS = "LOAD_PONEYS";
+
+export { LOGIN, LOGOUT, LOAD_PONEYS };
+```
+
+Agora, vamos ajustar nosso store de poneis para acertar a ação 'LOAD_PONEYS':
+
+```jsx
+// src/reducers/poneys.js
+import { LOAD_PONEYS } from "../constants";
+
+const initialState = { list: [], viewDeleted: false };
+
+export default function poneysReducer(state = initialState, action) {
+  switch (action.type) {
+    case LOAD_PONEYS:
+      return {
+        ...state,
+        list: [...action.data]
+      };
+    default:
+      return state;
+  }
+}
+```
+
+O último passo é fazer com que, no momento de carregamento da tela de listagem, haja a solicitação de carregamento da lista de poneis na aplicação:
+
+```jsx
+// src/components/ListaPoneysScreen.js
+import { Button, Icon, Left, ListItem, Right, Text } from "native-base";
+import PropTypes from "prop-types";
+import React from "react";
+import { Alert, FlatList, StyleSheet, View } from "react-native";
+import { connect } from "react-redux";
+
+// Novidade aqui
+import { bindActionCreators } from "redux";
+import { loadPoneys } from "../actions";
+
+class ListarPoneysScreen extends React.Component {
+  constructor(props) {
+    super(props);
+  }
+
+  // Novidade aqui
+  componentDidMount() {
+    this.props.loadPoneys();
+  }
+
+  // Código atual omitido
+}
+
+// Código atual omitido
+
+// Novidade aqui
+const mapDispatchToProps = dispatch =>
+  bindActionCreators({ loadPoneys }, dispatch);
+
+ListarPoneysScreen.propTypes = {
+  poneys: PropTypes.object,
+  profile: PropTypes.object,
+
+  // Novidade aqui
+  loadPoneys: PropTypes.func
+};
+
+// Código posterior omitido
+```
+
+Tudo parece certo, porém quando tentamos executar o código, recebemos a seguinte tela de erro:
+
+![Erro Action Plain](assets/erroaction.png)
+
+Ou seja, uma ação deve retornar um "objeto plano" ou devemos utilizar um middleware customizado, neste caso, vamos utilizar o middleware customizado chamado de `redux-thunk`, primeiro, devemos instalá-lo:
+
+```bash
+> npm install --save redux-thunk
+```
+
+Agora, vamos ajustar nossa função em `configureStore` para utilizar o redux-thunk:
+
+```jsx
+// src/configureStore.js.js
+import { applyMiddleware, createStore } from "redux";
+import thunk from "redux-thunk";
+import rootReducer from "./reducers";
+
+export default function configureStore() {
+  let store = createStore(rootReducer, applyMiddleware(thunk));
+  return store;
+}
+```
+
+Nossa action também deve ser ajustada para utilizar uma função `dispatch`:
+
+```jsx
+// src/actions.js
+import { loadPoneysAPI } from "./api";
+import { LOAD_PONEYS, LOGIN, LOGOUT } from "./constants";
+
+export function loadPoneys() {
+  return dipatch => {
+    loadPoneysAPI()
+      .then(res => {
+        dipatch({
+          type: LOAD_PONEYS,
+          data: res.body
+        });
+      })
+      .catch(error => {
+        console.log(error);
+      });
+  };
+}
+// Código posterior omitido
+```
+
+## Extra: Filtrar poneys por status (Excluido: True/False)
+
+Se fizermos `console.log` da resposta veremos que na verdade vários dos poneis sofreram exclusão lógica e mesmo assim estão sendo exibidos, precisamos filtrá-los na listagem, assim como criar um botão que exiba somente os excluídos ou somente os não excluídos:
+
+```jsx
+// src/actions.js
+// Código anterior omitido
+export function loadPoneys() {
+  return dipatch => {
+    loadPoneysAPI()
+      .then(res => {
+        // Novidade aqui
+        console.log(">>>>>>>>>>>>>>>>>");
+        console.log(res.body);
+
+        dipatch({
+          type: LOAD_PONEYS,
+          data: res.body
+        });
+      })
+      .catch(error => {
+        console.log(error);
+      });
+  };
+}
+// Código posterior omitido
+```
+
+A resposta será algo como:
+
+```bash
+>>>>>>>>>>>>>>>>>
+Array [
+  Object {
+    "_id": "AUqbjNFR17LqwOac",
+    "cor": "Branca",
+    "excluido": true,
+    "nome": "Epona",
+  },
+  Object {
+    "_id": "cU2BieASCEEIgF8E",
+    "cor": "Preta",
+    "excluido": true,
+    "nome": "Pé de Pano",
+  },
+  Object {
+    "_id": "z7wyKpalWQe7LeJz",
+    "cor": "Malhada",
+    "excluido": true,
+    "nome": "Thor",
+  },
+  Object {
+    "_id": "MIofwryRe6FKpO9G",
+    "cor": "Baio",
+    "nome": "Trovão",
+  },
+]
+```
+
+Vamos então colocar o botão com a funcionalidade:
+
+```jsx
+// src/components/HeaderButtonsComponent.js
+// Código anterior omitido
+import { bindActionCreators } from "redux";
+
+// Novidade aqui
+import { login, logout, toggleViewDeletedPoneys } from "../actions";
+
+class HeaderButtonsComponent extends React.Component {
+  // Código omitido
+
+  render() {
+    return (
+      <View style={styles.headerButtonContainer}>
+        {/* Novidade aqui */}
+        <Button transparent onPress={this.props.toggleViewDeletedPoneys}>
+          <Icon
+            style={[styles.headerIconFont, styles.headerIconMargin]}
+            name={this.props.poneys.viewDeleted ? "eye-off" : "eye"}
+          />
+        </Button>
+
+        {this.props.profile.user ? (
+          <View style={styles.headerButtonContainer}>
+            <Button transparent>
+              <Icon
+                style={[styles.headerIconFont, styles.headerIconMargin]}
+                name="add"
+                onPress={() =>
+                  Alert.alert("Incluir", "Aqui irá a tela de incluir ponei", [
+                    { text: "OK" }
+                  ])
+                }
+              />
+            </Button>
+            <Button transparent onPress={this.handleLogout}>
+              <Image
+                style={styles.headerIconMargin}
+                source={require("../assets/admin.png")}
+              />
+            </Button>
+          </View>
+        ) : (
+          <Button transparent onPress={this.openLoginModal}>
+            <Icon
+              style={[styles.headerIconFont, styles.headerIconMargin]}
+              name="contact"
+            />
+          </Button>
+        )}
+        {this.renderLoginModal()}
+      </View>
+    );
+  }
+}
+
+// Código omitido
+
+HeaderButtonsComponent.propTypes = {
+  profile: PropTypes.object,
+  poneys: PropTypes.object,
+
+  // Novidade aqui
+  toggleViewDeletedPoneys: PropTypes.func
+};
+
+const mapStateToProps = state => {
+  return {
+    profile: state.profile,
+    poneys: state.poneys
+  };
+};
+
+const mapDispatchToProps = dispatch =>
+  // Novidade aqui
+  bindActionCreators({ login, logout, toggleViewDeletedPoneys }, dispatch);
+
+// Código posterior omitido
+```
+
+Agora, temos que criar uma constante para uma nova ação de habilitar e desabilitar a exibição de poneys ocultos, assim como tratar esta ação no reducer e criar uma action correspondente:
+
+```jsx
+// src/constants.js
+const LOGIN = "LOGIN";
+const LOGOUT = "LOGOUT";
+const LOAD_PONEYS = "LOAD_PONEYS";
+
+// Novidade aqui
+const TOGGLE_VIEW_DELETED_PONEYS = "TOGGLE_VIEW_DELETED_PONEYS";
+
+// Novidade aqui
+export { LOGIN, LOGOUT, LOAD_PONEYS, TOGGLE_VIEW_DELETED_PONEYS };
+```
+
+```jsx
+// src/reducers/poneys.js
+// Novidade aqui
+import { LOAD_PONEYS, TOGGLE_VIEW_DELETED_PONEYS } from "../constants";
+
+const initialState = { list: [], viewDeleted: false };
+
+export default function poneysReducer(state = initialState, action) {
+  switch (action.type) {
+    case LOAD_PONEYS:
+      return {
+        ...state,
+        list: [...action.data]
+      };
+
+    // Novidade aqui
+    case TOGGLE_VIEW_DELETED_PONEYS:
+      return {
+        ...state,
+        viewDeleted: !state.viewDeleted
+      };
+    default:
+      return state;
+  }
+}
+```
+
+```jsx
+// src/actions.js
+// Código anterior omitido
+import { loadPoneysAPI } from "./api";
+import {
+  LOAD_PONEYS,
+  LOGIN,
+  LOGOUT,
+
+  // Novidade aqui
+  TOGGLE_VIEW_DELETED_PONEYS
+} from "./constants";
+
+// Código omitido
+
+// Novidade aqui
+export function toggleViewDeletedPoneys() {
+  return {
+    type: TOGGLE_VIEW_DELETED_PONEYS
+  };
+}
+// Código posterior omitido
+```
+
+E o último passo é responder a esta nova propriedade do nosso estado na view de listagem de poneys:
+
+```jsx
+// src/components/ListarPoneysScreen.js
+// Código anterior omitido
+class ListarPoneysScreen extends React.Component {
+  constructor(props) {
+    super(props);
+  }
+
+  componentDidMount() {
+    this.props.loadPoneys();
+  }
+
+  render() {
+
+    // Novidades aqui
+    let { poneys } = this.props;
+
+    let listExibicao = poneys.list.filter(
+      p => this.props.poneys.viewDeleted === !!p.excluido
+    );
+
+    return (
+      <View>
+        <FlatList
+
+          {/* Novidades aqui */}
+          data={listExibicao}
+
+          extraData={this.props.profile}
+          renderItem={({ item }) => (
+            <ListItem noIndent>
+              <Left>
+                <Text
+                  {/* Novidades aqui */}
+                  style={[styles.item, item.excluido ? styles.tachado : ""]}
+                >
+                  {item.nome}
+                </Text>
+              </Left>
+              {/* Código omitido */}
+            </ListItem>
+          )}
+          keyExtractor={item => item._id}
+        />
+      </View>
+    );
+  }
+}
+
+const styles = StyleSheet.create({
+  itemContainer: {
+    flex: 1,
+    flexDirection: "row",
+    borderBottomWidth: 1
+  },
+  item: {
+    padding: 10,
+    fontSize: 18,
+    height: 44,
+    width: 120
+  },
+
+  // Novidades aqui
+  tachado: {
+    textDecorationLine: "line-through",
+    textDecorationStyle: "solid"
+  }
+});
+
+// Código posterior omitido
+```
+
+Mas agora temos um dilema, não seria mais correto ocultar os botões de edição e exclusão de poneis para os poneis que já foram excluídos?
+
+Vamos fazer isso:
+
+```jsx
+// src/components/ListarPoneysScreen.js
+// Código anterior omitido
+class ListarPoneysScreen extends React.Component {
+  // Código omitido
+
+  render() {
+    // Código omitido
+
+    return (
+      <View>
+        <FlatList
+          data={listExibicao}
+          extraData={this.props.profile}
+          renderItem={({ item }) => (
+            <ListItem noIndent>
+              <Left>
+                <Text
+                  style={[styles.item, item.excluido ? styles.tachado : ""]}
+                >
+                  {item.nome}
+                </Text>
+              </Left>
+              <Right>
+                {/* Novidades aqui */}
+                {this.props.profile.user && !item.excluido && (
+                  <View style={{ flexDirection: "row", flex: 1 }}>
+                    <Button
+                      primary
+                      onPress={() =>
+                        Alert.alert(
+                          "Alterar",
+                          "Aqui irá a tela de Alterar ponei",
+                          [{ text: "OK" }]
+                        )
+                      }
+                      style={{ marginRight: 10 }}
+                    >
+                      <Icon name="create" />
+                    </Button>
+                    <Button
+                      danger
+                      onPress={() =>
+                        Alert.alert(
+                          "Excluir",
+                          "Aqui exibirá a confirmação de exclusão do ponei",
+                          [{ text: "OK" }]
+                        )
+                      }
+                    >
+                      <Icon name="trash" />
+                    </Button>
+                  </View>
+                )}
+              </Right>
+            </ListItem>
+          )}
+          keyExtractor={item => item._id}
+        />
+      </View>
+    );
+  }
+}
+
+// Código posterior omitido
+```
