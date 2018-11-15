@@ -883,3 +883,98 @@ Agora que já temos o Redux controlando o estado da autenticação, nosso próxi
 ## Botão pra Editar e Excluir Ponei
 
 Temos mais dois botões a serem colocados na tela, mas estes vão ficar ao lado de cada ponei na listagem, são os botões de editar e excluir:
+
+```jsx
+// src/components/ListarPoneysScreen.js
+// Código anterior omitido
+  render() {
+    return (
+      <View>
+        <FlatList
+          data={this.props.poneys.list}
+          renderItem={({ item }) => (
+            <ListItem noIndent>
+              <Left>
+                <Text style={styles.item}>{item.nome}</Text>
+              </Left>
+              <Right>
+                {this.props.profile.user && (
+                  <View style={{ flexDirection: "row", flex: 1 }}>
+                    <Button
+                      primary
+                      onPress={() =>
+                        Alert.alert(
+                          "Alterar",
+                          "Aqui irá a tela de Alterar ponei",
+                          [{ text: "OK" }]
+                        )
+                      }
+                      style={{ marginRight: 10 }}
+                    >
+                      <Icon name="create" />
+                    </Button>
+                    <Button
+                      danger
+                      onPress={() =>
+                        Alert.alert(
+                          "Excluir",
+                          "Aqui exibirá a confirmação de exclusão do ponei",
+                          [{ text: "OK" }]
+                        )
+                      }
+                    >
+                      <Icon name="trash" />
+                    </Button>
+                  </View>
+                )}
+              </Right>
+            </ListItem>
+          )}
+          keyExtractor={item => item._id}
+        />
+      </View>
+    );
+  }
+}
+
+// Código atual omitido
+
+const mapStateToProps = state => {
+  return {
+    poneys: state.poneys,
+
+    // Novidade aqui
+    profile: state.profile
+  };
+};
+
+const mapDispatchToProps = {};
+
+ListarPoneysScreen.propTypes = {
+  poneys: PropTypes.object,
+
+  // Novidade aqui
+  profile: PropTypes.object
+};
+
+// Código posterior omitido
+```
+
+Mas apesar de nossa lógica estar aparentemente correta, os botões não são exibidos após o usuário se logar... Para que isso funcione, precisamos "avisar" a lista que ela precisa se atualizar:
+
+```jsx
+// src/components/ListarPoneysScreen.js
+// Código anterior omitido
+  render() {
+    return (
+      <View>
+        <FlatList
+          data={this.props.poneys.list}
+          extraData={this.props.profile}
+          renderItem={({ item }) => (
+            <ListItem noIndent>
+              <Left>
+                <Text style={styles.item}>{item.nome}</Text>
+              </Left>
+// Código posterior omitido
+```
