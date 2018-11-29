@@ -10,7 +10,7 @@ import { Text } from "native-base";
 import React from "react";
 import { connect } from "react-redux";
 
-class AdicionaPoneyScreen extends React.Component {
+class AdicionarPoneyScreen extends React.Component {
   constructor(props) {
     super(props);
   }
@@ -20,14 +20,14 @@ class AdicionaPoneyScreen extends React.Component {
   }
 }
 
-const mapStateToProps = {};
-
 const mapStateToProps = () => ({});
+
+const mapDispatchToProps = () => ({});
 
 export default connect(
   mapStateToProps,
   mapDispatchToProps
-)(AdicionaPoneyScreen);
+)(AdicionarPoneyScreen);
 ```
 
 Temos também que adicionar um roteamento para esta tela:
@@ -165,7 +165,7 @@ Para facilitar o processo de validação do formulário, assim como o controle d
 ```
 
 ```jsx
-// src/CoponeyMob.js
+// src/components/MantemPoneyForm.js
 import { Button, Text, Item, Label, Input, Picker, Icon } from "native-base";
 import React from "react";
 import { View } from "react-native";

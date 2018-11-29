@@ -6,14 +6,14 @@ Nossa primeira tarefa mover nossa base de código para dentro da pasta `src`, pa
 
 ```jsx
 // App.js
-import ListaPoneysScreen from "./src/components/ListaPoneysScreen";
-export default ListaPoneysScreen;
+import ListarPoneysScreen from "./src/components/ListarPoneysScreen";
+export default ListarPoneysScreen;
 ```
 
 Agora, dentro da pasta `src\components`, vamo criar a tela inicial de nosso sistema, que será uma listagem de poneis:
 
 ```jsx
-// src/components/ListaPoneysScreen.js
+// src/components/ListarPoneysScreen.js
 import { Left, ListItem, Text } from "native-base";
 import React from "react";
 import { FlatList, StyleSheet, View } from "react-native";
@@ -109,7 +109,7 @@ Reactotron.configure({ port: 9090 }) // controls connection & communication sett
 import React from "react";
 import { StyleSheet, View } from "react-native";
 import Reactotron from "reactotron-react-native";
-import ListaPoneysScreen from "./components/ListaPoneysScreen";
+import ListarPoneysScreen from "./components/ListarPoneysScreen";
 import "./ReactotronConfig";
 import { Spinner } from "native-base";
 
@@ -140,7 +140,7 @@ export default class CoponeyMob extends React.Component {
         </View>
       );
     } else {
-      return <ListaPoneysScreen />;
+      return <ListarPoneysScreen />;
     }
   }
 }
@@ -357,7 +357,7 @@ export default class CoponeyMob extends React.Component {
 Nossa tela de listagem de poneys deverá então obter a lista de poneys a partir do redux:
 
 ```jsx
-// src/CoponeyMob.js
+// src/components/ListarPoneysScreen.js
 import { Left, ListItem, Text } from "native-base";
 
 // Novidade aqui
@@ -810,7 +810,9 @@ const styles = StyleSheet.create({
 // Novidades aqui
 HeaderButtonsComponent.propTypes = {
   profile: PropTypes.object,
-  poneys: PropTypes.object
+  poneys: PropTypes.object,
+  login: PropTypes.func,
+  logout: PropTypes.func
 };
 
 const mapStateToProps = state => {
@@ -822,11 +824,6 @@ const mapStateToProps = state => {
 
 const mapDispatchToProps = dispatch =>
   bindActionCreators({ login, logout }, dispatch);
-
-HeaderButtonsComponent.propTypes = {
-  login: PropTypes.func,
-  logout: PropTypes.func
-};
 
 export default connect(
   mapStateToProps,
@@ -1040,7 +1037,7 @@ const LOAD_PONEYS = "LOAD_PONEYS";
 export { LOGIN, LOGOUT, LOAD_PONEYS };
 ```
 
-Agora, vamos ajustar nosso store de poneis para acertar a ação 'LOAD_PONEYS':
+Agora, vamos ajustar nosso store de poneis para aceitar a ação 'LOAD_PONEYS':
 
 ```jsx
 // src/reducers/poneys.js
@@ -1064,7 +1061,7 @@ export default function poneysReducer(state = initialState, action) {
 O último passo é fazer com que, no momento de carregamento da tela de listagem, haja a solicitação de carregamento da lista de poneis na aplicação:
 
 ```jsx
-// src/components/ListaPoneysScreen.js
+// src/components/ListarPoneysScreen.js
 import { Button, Icon, Left, ListItem, Right, Text } from "native-base";
 import PropTypes from "prop-types";
 import React from "react";
@@ -1129,7 +1126,7 @@ export default function configureStore() {
 }
 ```
 
-Nossa action também deve ser ajustada para utilizar uma função `dispatch`:
+Nossa action também deve ser ajustada para utilizar uma função ```dispatch```:
 
 ```jsx
 // src/actions.js
@@ -1137,10 +1134,10 @@ import { loadPoneysAPI } from "./api";
 import { LOAD_PONEYS, LOGIN, LOGOUT } from "./constants";
 
 export function loadPoneys() {
-  return dipatch => {
+  return dispatch => {
     loadPoneysAPI()
       .then(res => {
-        dipatch({
+        dispatch({
           type: LOAD_PONEYS,
           data: res.body
         });

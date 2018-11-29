@@ -618,7 +618,7 @@ Já vimos como criar componentes a partir de uma classe (a classe Mensagem), por
 // App.js
 // Código anterior omitido
 function MensagemSimples(props) {
-  return <Text>Uma componente de função: {props.texto}</Text>;
+  return <Text>Um componente de função: {props.texto}</Text>;
 }
 
 export default class App extends React.Component {
@@ -652,7 +652,7 @@ Uma grande vantagem do Expo Client é que podemos compilar o código em um compu
 Ao balançar o dispositivo, podemos acessar o menu do desenvolvedor do Expo Cli, onde podemos:
 
 - Reload: Recarregar a aplicação
-- Debug JS Remoately: Debugar a aplicação remotamente (Chrome remote debugging)
+- Debug JS Remotely: Debugar a aplicação remotamente (Chrome remote debugging)
 - Habilitar/Desabilitar o Live Reload
 - Habilitar o Hot Reloading
 - Ativar o "inspector"

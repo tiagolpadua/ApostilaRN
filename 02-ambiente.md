@@ -26,7 +26,7 @@ Ferramentas instaladas no dispositivo mobile:
 Podemos testar a instalação de algumas das ferramentas:
 
 ```bash
-PS C:\Users\usuario\> --version
+PS C:\Users\usuario\> node --version
 v10.4.1
 
 PS C:\Users\usuario\> expo --version

@@ -63,7 +63,7 @@ O comando 'adb devices' lista os dispositivos conectados, tando emulador quanto 
 Em caso de dificuldade de conexão com o Expo local, pode ser feita tentativa de novo 'adb reverse':
 
 ```bash
-> adb -s 0040483203 reverse tcp:19001 tcp:19001
+> adb reverse tcp:19001 tcp:19001
 ```
 
 É possível também ver o log do dispositivo pela linha de comandos

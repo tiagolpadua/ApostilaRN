@@ -38,7 +38,7 @@ return React.createElement(
 
 O JSX possui todo o poder do JavaScript. Coloca-se qualquer expressão JavaScript dentro de chaves dentro do JSX. Cada elemento React é um objeto JavaScript que se pode armazenar em uma variável ou passar ao programa.
 
-O componente ListaCompras acima apenas renderiza componentes DOM internos, como <div\/> e <li\/>. Mas também pode compor e renderizar componentes React personalizados. Por exemplo, podemos nos referir a toda a lista de compras escrevendo <ListaCompras/>. Cada componente React é encapsulado e pode operar de forma independente; Isso permite que se construa interfaces com o usuário complexas a partir de componentes simples.
+O componente ListaCompras acima apenas renderiza componentes DOM internos, como ```<div>``` e ```<li>```. Mas também pode compor e renderizar componentes React personalizados. Por exemplo, podemos nos referir a toda a lista de compras escrevendo ```<ListaCompras/>```. Cada componente React é encapsulado e pode operar de forma independente; Isso permite que se construa interfaces com o usuário complexas a partir de componentes simples.
 
 Podemos testar a compilação de código JSX de forma online através do link: https://babeljs.io/repl/
 

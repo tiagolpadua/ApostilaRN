@@ -219,7 +219,7 @@ export function updatePoneyAPI(poney) {
 ```jsx
 // src/actions.js
 // Novidade aqui
-import { loadPoneysAPI, addPoneyAPI } from "./api";
+import { loadPoneysAPI, addPoneyAPI, updatePoneyAPI } from "./api";
 
 import {
   LOAD_PONEYS,
